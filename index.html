@@ -121,6 +121,35 @@
     .btn-copy:hover { background: #7a1515; color: white; }
     .btn-copy.copied { background: #2a7a2a; border-color: #2a7a2a; color: white; }
 
+    .formula-copy-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin-top: 10px;
+      padding: 6px 14px;
+      background: transparent;
+      border: 1px solid #ccc;
+      color: #666;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .formula-copy-btn:hover { border-color: #7a1515; color: #7a1515; }
+    .formula-copy-btn.copied { background: #2a7a2a; border-color: #2a7a2a; color: white; }
+
+    .review-badge {
+      display: inline-block;
+      background: #fff3cd;
+      color: #856404;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 500;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+
     .formula-card {
       border: 1.5px solid #e8e4e0;
       border-radius: 10px;
@@ -198,9 +227,12 @@
 
   <div class="output" id="output">
     <div class="card">
-      <div class="card-title">✅ 视频底部辩证内容</div>
+      <div class="card-title">
+        ✅ 辩证声明
+        <span class="review-badge">抖音审核专用</span>
+      </div>
       <div class="disclaimer-box" id="disclaimerOut"></div>
-      <button class="btn-copy" onclick="copy('disclaimerOut', this)">复制</button>
+      <button class="btn-copy" onclick="copy('disclaimerOut', this)">一键复制</button>
     </div>
     <div class="card">
       <div class="card-title">📋 方子核实结果</div>
@@ -267,9 +299,18 @@ function render({ disclaimer, formulas }) {
   if (!formulas?.length) {
     c.innerHTML = '<div class="no-formula">未检测到具体方剂或偏方</div>';
   } else {
-    formulas.forEach(f => {
+    formulas.forEach((f, idx) => {
       const safe = f.isSafe !== false;
       const hasDiff = f.corrections && f.corrections !== '与官方记载一致';
+      const cardId = `formula-card-${idx}`;
+      const copyText = [
+        `【${f.officialName || f.name}】`,
+        `出处：${f.officialSource || ''}`,
+        `功效：${f.verifiedEfficacy || ''}`,
+        `适应证型：${f.verifiedIndications || ''}`,
+        f.safetyWarnings ? `注意事项：${f.safetyWarnings}` : ''
+      ].filter(Boolean).join('\n');
+
       c.innerHTML += `
         <div class="formula-card">
           <div class="formula-header ${safe?'safe':'unsafe'}">
@@ -285,6 +326,7 @@ function render({ disclaimer, formulas }) {
             <div class="info-row"><span class="info-label">权威出处</span><span><span class="source-tag">${f.officialSource||''}</span></span></div>
             ${hasDiff?`<div class="diff-box"><div class="label">📝 与原文案差异</div>${f.corrections}</div>`:''}
             ${f.safetyWarnings?`<div class="warn-box"><div class="label">⚠️ 安全警示</div>${f.safetyWarnings}</div>`:''}
+            <button class="formula-copy-btn" onclick="copyRaw(\`${copyText.replace(/`/g, '\\`')}\`, this)">📋 复制此方子信息</button>
           </div>
         </div>`;
     });
@@ -299,7 +341,15 @@ function copy(id, btn) {
   navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
     btn.textContent = '已复制 ✓';
     btn.classList.add('copied');
-    setTimeout(() => { btn.textContent = '复制'; btn.classList.remove('copied'); }, 2000);
+    setTimeout(() => { btn.textContent = '一键复制'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyRaw(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ 已复制';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = '📋 复制此方子信息'; btn.classList.remove('copied'); }, 2000);
   });
 }
 

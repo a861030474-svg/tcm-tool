@@ -38,15 +38,20 @@ const VERIFY_PROMPT = `你是严谨的中医药典籍考证专家，精通《中
   ]
 }`;
 
-const DISCLAIMER_PROMPT = `你是中医内容合规专家，熟悉抖音、小红书、视频号的中医内容审核规则。
+// 注意：此 prompt 在验证结果出来后执行，可将出处信息整合进审核声明
+const DISCLAIMER_PROMPT = `你是中医内容合规专家，专门为抖音、小红书、视频号的中医内容撰写审核声明。
 
-根据视频文案生成底部辩证免责声明，要求：
-- 体现中医辨证论治精神，强调个体差异
-- 须由执业中医师面诊后辨证使用
-- 80-120字，语言自然不生硬
-- 不得有保证疗效、保证治愈的表述
+根据以下视频文案和已核实的方剂信息，生成一段【平台审核专用辩证声明】。
 
-只输出声明文字本身。`;
+写作要求：
+1. 主动引用每个方剂的权威古籍出处（如"XX方，载于《伤寒论》卷X"），以证明内容有文献依据，非民间臆传
+2. 简要说明每个方剂的官方功效与适应证型，体现专业性
+3. 如原文案描述与官方记载有差异，将正确版本自然融入声明中（不要提"原文案有误"，只写正确的）
+4. 结尾加入辨证论治免责语，强调需由执业中医师面诊，不构成诊疗建议
+5. 语言专业、客观，适合平台审核人员快速判断合规性
+6. 字数150-250字
+
+只输出声明文字，不加任何标题或前缀。`;
 
 async function chat(system, user) {
   const res = await fetch(DEEPSEEK_URL, {
@@ -89,17 +94,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [extractRaw, disclaimer] = await Promise.all([
-      chat(EXTRACT_PROMPT, content),
-      chat(DISCLAIMER_PROMPT, content),
-    ]);
-
+    // 第一步：提取方子
+    const extractRaw = await chat(EXTRACT_PROMPT, content);
     const extracted = parseJSON(extractRaw);
 
     if (!extracted.remedies?.length) {
+      // 无方子时直接生成简版声明
+      const disclaimer = await chat(
+        DISCLAIMER_PROMPT,
+        `视频文案：${content}\n\n已核实方剂：无`
+      );
       return res.status(200).json({ disclaimer, formulas: [] });
     }
 
+    // 第二步：核实方子
     const remedyList = extracted.remedies
       .map(
         (r, i) =>
@@ -111,8 +119,20 @@ export default async function handler(req, res) {
       VERIFY_PROMPT,
       `请对以下方子逐一进行官方文献核实：\n\n${remedyList}`
     );
-
     const verified = parseJSON(verifyRaw);
+
+    // 第三步：将核实结果整合进辩证声明（审核用）
+    const verifiedSummary = verified.verified
+      .map(
+        (v) =>
+          `${v.officialName}：出处${v.officialSource}，功效${v.verifiedEfficacy}，适应证型${v.verifiedIndications}`
+      )
+      .join("；");
+
+    const disclaimer = await chat(
+      DISCLAIMER_PROMPT,
+      `视频文案：${content}\n\n已核实方剂信息：${verifiedSummary}`
+    );
 
     const formulas = verified.verified.map((v, i) => ({
       ...extracted.remedies[i],
