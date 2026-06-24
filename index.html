@@ -228,14 +228,22 @@
   <div class="output" id="output">
     <div class="card">
       <div class="card-title">
-        ✅ 辩证声明
-        <span class="review-badge">抖音审核专用</span>
+        📋 辩证声明
+        <span class="review-badge">审核专用 · 含古籍出处证明</span>
       </div>
-      <div class="disclaimer-box" id="disclaimerOut"></div>
-      <button class="btn-copy" onclick="copy('disclaimerOut', this)">一键复制</button>
+      <div class="disclaimer-box" id="reviewDisclaimerOut"></div>
+      <button class="btn-copy" onclick="copy('reviewDisclaimerOut', this)">一键复制</button>
     </div>
     <div class="card">
-      <div class="card-title">📋 方子核实结果</div>
+      <div class="card-title">
+        ⚠️ 底部警示文案
+        <span class="review-badge" style="background:#e8f5e8;color:#1a6a00">直接放视频底部</span>
+      </div>
+      <div class="disclaimer-box" id="bottomWarningOut"></div>
+      <button class="btn-copy" onclick="copy('bottomWarningOut', this)">一键复制</button>
+    </div>
+    <div class="card">
+      <div class="card-title">🔍 方子核实结果</div>
       <div id="formulasOut"></div>
     </div>
   </div>
@@ -292,7 +300,8 @@ async function generate() {
 }
 
 function render({ disclaimer, formulas }) {
-  document.getElementById('disclaimerOut').textContent = disclaimer;
+  document.getElementById('reviewDisclaimerOut').textContent = reviewDisclaimer || disclaimer || '';
+  document.getElementById('bottomWarningOut').textContent = bottomWarning || '';
   const c = document.getElementById('formulasOut');
   c.innerHTML = '';
 

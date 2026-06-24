@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>中医医典管理后台</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f5f4f0; color: #2c2c2c; min-height: 100vh; }
+
+    header { background: #3a1a00; color: white; padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; }
+    header h1 { font-size: 16px; font-weight: 600; }
+    header a { color: rgba(255,255,255,0.7); font-size: 13px; text-decoration: none; }
+    header a:hover { color: white; }
+
+    /* 登录 */
+    .login-wrap { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+    .login-card { background: white; border-radius: 12px; padding: 32px; width: 360px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .login-card h2 { font-size: 18px; color: #3a1a00; margin-bottom: 20px; }
+    .login-card input { width: 100%; border: 1.5px solid #ddd; border-radius: 8px; padding: 11px 13px; font-size: 14px; margin-bottom: 12px; }
+    .login-card input:focus { outline: none; border-color: #3a1a00; }
+    .btn-login { width: 100%; padding: 12px; background: #3a1a00; color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-login:hover { background: #5a2a00; }
+    .login-err { color: #c00; font-size: 13px; margin-top: 8px; display: none; }
+
+    /* 主界面 */
+    .main { display: none; max-width: 1000px; margin: 24px auto; padding: 0 16px; }
+
+    .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; gap: 12px; flex-wrap: wrap; }
+    .toolbar-left { display: flex; align-items: center; gap: 10px; }
+    .btn-add { padding: 9px 18px; background: #3a1a00; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-add:hover { background: #5a2a00; }
+    .btn-save { padding: 9px 22px; background: #1a6a00; color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-save:hover { background: #2a8a00; }
+    .btn-save:disabled { background: #aaa; cursor: not-allowed; }
+    .save-status { font-size: 13px; color: #888; }
+    .save-status.success { color: #1a6a00; }
+    .save-status.error { color: #c00; }
+
+    .classics-grid { display: grid; gap: 12px; }
+
+    .classic-card { background: white; border-radius: 10px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07); border: 1.5px solid #e8e4e0; }
+    .classic-card.editing { border-color: #3a1a00; }
+
+    .card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .priority-badge { background: #3a1a00; color: white; font-size: 11px; padding: 2px 8px; border-radius: 12px; font-weight: 600; flex-shrink: 0; }
+    .classic-name { font-size: 15px; font-weight: 600; flex: 1; }
+    .card-actions { display: flex; gap: 8px; }
+    .btn-edit { padding: 5px 12px; background: transparent; border: 1.5px solid #3a1a00; color: #3a1a00; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .btn-delete { padding: 5px 12px; background: transparent; border: 1.5px solid #c04000; color: #c04000; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .btn-edit:hover { background: #3a1a00; color: white; }
+    .btn-delete:hover { background: #c04000; color: white; }
+
+    .card-meta { font-size: 12px; color: #888; margin-bottom: 6px; }
+    .card-desc { font-size: 13px; color: #444; line-height: 1.5; }
+    .card-stats { font-size: 12px; color: #666; margin-top: 4px; }
+
+    /* 编辑表单 */
+    .edit-form { margin-top: 14px; padding-top: 14px; border-top: 1px solid #eee; display: grid; gap: 10px; }
+    .form-row { display: grid; grid-template-columns: 80px 1fr; gap: 8px; align-items: start; }
+    .form-row label { font-size: 12px; color: #888; padding-top: 8px; }
+    .form-row input, .form-row textarea { border: 1.5px solid #ddd; border-radius: 6px; padding: 7px 10px; font-size: 13px; font-family: inherit; width: 100%; }
+    .form-row input:focus, .form-row textarea:focus { outline: none; border-color: #3a1a00; }
+    .form-row textarea { height: 70px; resize: vertical; }
+    .form-btns { display: flex; gap: 8px; justify-content: flex-end; }
+    .btn-confirm { padding: 7px 16px; background: #3a1a00; color: white; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .btn-cancel { padding: 7px 16px; background: transparent; border: 1.5px solid #ddd; border-radius: 6px; font-size: 12px; cursor: pointer; color: #666; }
+
+    /* 新增弹窗 */
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; align-items: center; justify-content: center; }
+    .modal-bg.show { display: flex; }
+    .modal { background: white; border-radius: 12px; padding: 24px; width: 90%; max-width: 540px; box-shadow: 0 20px 60px rgba(0,0,0,0.15); }
+    .modal h3 { font-size: 16px; color: #3a1a00; margin-bottom: 16px; }
+    .modal .form-row { grid-template-columns: 90px 1fr; }
+    .modal-btns { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+    .empty { text-align: center; color: #aaa; font-size: 14px; padding: 40px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>中医医典管理后台</h1>
+  <a href="/">← 返回主工具</a>
+</header>
+
+<!-- 登录 -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <h2>管理员登录</h2>
+    <input type="password" id="pwdInput" placeholder="输入管理员密码" onkeydown="if(event.key==='Enter')login()" />
+    <button class="btn-login" onclick="login()">登录</button>
+    <div class="login-err" id="loginErr">密码错误，请重试</div>
+  </div>
+</div>
+
+<!-- 主界面 -->
+<div class="main" id="mainWrap">
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <button class="btn-add" onclick="openAddModal()">＋ 添加医典</button>
+      <span class="save-status" id="saveStatus"></span>
+    </div>
+    <button class="btn-save" id="saveBtn" onclick="saveAll()">保存并发布</button>
+  </div>
+  <div class="classics-grid" id="classicsGrid"></div>
+</div>
+
+<!-- 新增弹窗 -->
+<div class="modal-bg" id="addModal">
+  <div class="modal">
+    <h3>添加新医典</h3>
+    <div style="display:grid;gap:10px">
+      <div class="form-row"><label>典籍名称</label><input id="new_name" placeholder="如《温病条辨》" /></div>
+      <div class="form-row"><label>朝代</label><input id="new_dynasty" placeholder="如清代" /></div>
+      <div class="form-row"><label>作者</label><input id="new_author" placeholder="如吴鞠通" /></div>
+      <div class="form-row"><label>核心数据</label><input id="new_stats" placeholder="如载方208首" /></div>
+      <div class="form-row"><label>代表方药</label><input id="new_keyFormulas" placeholder="用逗号分隔，如银翘散,桑菊饮" /></div>
+      <div class="form-row"><label>简介描述</label><textarea id="new_desc" placeholder="该典籍的地位和核实价值"></textarea></div>
+      <div class="form-row"><label>优先级</label><input id="new_priority" type="number" placeholder="数字越小优先级越高" /></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeAddModal()">取消</button>
+      <button class="btn-confirm" onclick="addClassic()">添加</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let password = '';
+let classics = [];
+let dirty = false;
+
+function login() {
+  password = document.getElementById('pwdInput').value;
+  fetchClassics();
+}
+
+async function fetchClassics() {
+  const res = await fetch('/api/admin', { headers: { 'x-admin-password': password } });
+  if (res.status === 401) {
+    document.getElementById('loginErr').style.display = 'block';
+    return;
+  }
+  classics = await res.json();
+  classics.sort((a, b) => a.priority - b.priority);
+  document.getElementById('loginWrap').style.display = 'none';
+  document.getElementById('mainWrap').style.display = 'block';
+  render();
+}
+
+function render() {
+  const grid = document.getElementById('classicsGrid');
+  if (!classics.length) { grid.innerHTML = '<div class="empty">暂无医典，点击上方添加</div>'; return; }
+
+  grid.innerHTML = classics.map((c, i) => `
+    <div class="classic-card" id="card-${i}">
+      <div class="card-header">
+        <span class="priority-badge">${c.priority}</span>
+        <span class="classic-name">${c.name}</span>
+        <div class="card-actions">
+          <button class="btn-edit" onclick="toggleEdit(${i})">编辑</button>
+          <button class="btn-delete" onclick="deleteClassic(${i})">删除</button>
+        </div>
+      </div>
+      <div class="card-meta">${c.dynasty} · ${c.author}</div>
+      <div class="card-desc">${c.description}</div>
+      ${c.stats ? `<div class="card-stats">${c.stats}</div>` : ''}
+      <div class="edit-form" id="form-${i}" style="display:none">
+        <div class="form-row"><label>典籍名称</label><input id="f_name_${i}" value="${esc(c.name)}" /></div>
+        <div class="form-row"><label>朝代</label><input id="f_dynasty_${i}" value="${esc(c.dynasty)}" /></div>
+        <div class="form-row"><label>作者</label><input id="f_author_${i}" value="${esc(c.author)}" /></div>
+        <div class="form-row"><label>核心数据</label><input id="f_stats_${i}" value="${esc(c.stats||'')}" /></div>
+        <div class="form-row"><label>代表方药</label><input id="f_keys_${i}" value="${esc((c.keyFormulas||[]).join(','))}" /></div>
+        <div class="form-row"><label>简介描述</label><textarea id="f_desc_${i}">${esc(c.description)}</textarea></div>
+        <div class="form-row"><label>优先级</label><input id="f_priority_${i}" type="number" value="${c.priority}" /></div>
+        <div class="form-btns">
+          <button class="btn-cancel" onclick="cancelEdit(${i})">取消</button>
+          <button class="btn-confirm" onclick="saveEdit(${i})">确认</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function esc(s) { return String(s).replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+
+function toggleEdit(i) {
+  const form = document.getElementById(`form-${i}`);
+  const card = document.getElementById(`card-${i}`);
+  form.style.display = 'block';
+  card.classList.add('editing');
+}
+
+function cancelEdit(i) {
+  document.getElementById(`form-${i}`).style.display = 'none';
+  document.getElementById(`card-${i}`).classList.remove('editing');
+}
+
+function saveEdit(i) {
+  classics[i] = {
+    ...classics[i],
+    name: document.getElementById(`f_name_${i}`).value,
+    dynasty: document.getElementById(`f_dynasty_${i}`).value,
+    author: document.getElementById(`f_author_${i}`).value,
+    stats: document.getElementById(`f_stats_${i}`).value,
+    keyFormulas: document.getElementById(`f_keys_${i}`).value.split(',').map(s=>s.trim()).filter(Boolean),
+    description: document.getElementById(`f_desc_${i}`).value,
+    priority: parseInt(document.getElementById(`f_priority_${i}`).value) || i + 1,
+  };
+  dirty = true;
+  classics.sort((a,b) => a.priority - b.priority);
+  render();
+  setStatus('有未保存的更改，点击「保存并发布」生效');
+}
+
+function deleteClassic(i) {
+  if (!confirm(`确认删除 ${classics[i].name}？`)) return;
+  classics.splice(i, 1);
+  dirty = true;
+  render();
+  setStatus('有未保存的更改，点击「保存并发布」生效');
+}
+
+function openAddModal() { document.getElementById('addModal').classList.add('show'); }
+function closeAddModal() { document.getElementById('addModal').classList.remove('show'); }
+
+function addClassic() {
+  const name = document.getElementById('new_name').value.trim();
+  if (!name) { alert('请填写典籍名称'); return; }
+  const newClassic = {
+    id: 'classic_' + Date.now(),
+    name,
+    dynasty: document.getElementById('new_dynasty').value.trim(),
+    author: document.getElementById('new_author').value.trim(),
+    stats: document.getElementById('new_stats').value.trim(),
+    keyFormulas: document.getElementById('new_keyFormulas').value.split(',').map(s=>s.trim()).filter(Boolean),
+    description: document.getElementById('new_desc').value.trim(),
+    priority: parseInt(document.getElementById('new_priority').value) || classics.length + 1,
+  };
+  classics.push(newClassic);
+  classics.sort((a,b) => a.priority - b.priority);
+  dirty = true;
+  closeAddModal();
+  render();
+  setStatus('已添加，点击「保存并发布」生效');
+  ['new_name','new_dynasty','new_author','new_stats','new_keyFormulas','new_desc','new_priority'].forEach(id => document.getElementById(id).value = '');
+}
+
+async function saveAll() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.textContent = '发布中…';
+  setStatus('正在提交到 GitHub，约1分钟后生效…');
+
+  try {
+    const res = await fetch('/api/admin', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': password },
+      body: JSON.stringify({ classics })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    dirty = false;
+    setStatus('✓ 已发布，Vercel 正在重新部署（约1分钟后生效）', 'success');
+  } catch(e) {
+    setStatus('发布失败：' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '保存并发布';
+  }
+}
+
+function setStatus(msg, type='') {
+  const el = document.getElementById('saveStatus');
+  el.textContent = msg;
+  el.className = 'save-status ' + type;
+}
+</script>
+</body>
+</html>
