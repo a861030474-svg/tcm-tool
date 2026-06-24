@@ -252,6 +252,11 @@
 
 <script>
 let progressTimer = null;
+const formulaCopyTexts = [];
+
+function copyFormula(idx, btn) {
+  copyRaw(formulaCopyTexts[idx], btn);
+}
 
 function startProgress() {
   document.getElementById('progress').style.display = 'flex';
@@ -312,7 +317,7 @@ function render({ reviewDisclaimer, bottomWarning, formulas }) {
       const safe = f.isSafe !== false;
       const hasDiff = f.corrections && f.corrections !== '与官方记载一致';
       const cardId = `formula-card-${idx}`;
-      const copyText = [
+      formulaCopyTexts[idx] = [
         `【${f.officialName || f.name}】`,
         `出处：${f.officialSource || ''}`,
         `功效：${f.verifiedEfficacy || ''}`,
@@ -335,7 +340,7 @@ function render({ reviewDisclaimer, bottomWarning, formulas }) {
             <div class="info-row"><span class="info-label">权威出处</span><span><span class="source-tag">${f.officialSource||''}</span></span></div>
             ${hasDiff?`<div class="diff-box"><div class="label">📝 与原文案差异</div>${f.corrections}</div>`:''}
             ${f.safetyWarnings?`<div class="warn-box"><div class="label">⚠️ 安全警示</div>${f.safetyWarnings}</div>`:''}
-            <button class="formula-copy-btn" onclick="copyRaw(\`${copyText.replace(/`/g, '\\`')}\`, this)">📋 复制此方子信息</button>
+            <button class="formula-copy-btn" onclick="copyFormula(${idx}, this)">📋 复制此方子信息</button>
           </div>
         </div>`;
     });
