@@ -1,7 +1,5 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const DEEPSEEK_URL = "https://api.deepseek.com/chat/completions";
+const API_KEY = process.env.DEEPSEEK_API_KEY;
 
 const EXTRACT_PROMPT = `你是中医典籍专家。从以下视频文案中提取所有出现的方剂、中成药、民间偏方、土方子、单味药材特殊用法、食疗方。
 
@@ -21,7 +19,7 @@ const VERIFY_PROMPT = `你是严谨的中医药典籍考证专家，精通《中
 
 对以下方子逐一核实，给出经官方文献验证并纠正后的标准内容：
 - 经典方剂：对照原典纠正成分、用量、适应症的错误描述
-- 民间偏方/土方子：在《中华本草》《中国民间验方》中查找；有依据则给官方描述，无记载则找最接近功效的官方方剂
+- 民间偏方/土方子：在《中华本草》《中国民间验方》中查找；有依据则给出官方描述，无记载则找最接近功效的官方方剂替代
 - 夸大功效：按官方文献给出准确保守的表述
 
 只输出JSON：
@@ -40,27 +38,44 @@ const VERIFY_PROMPT = `你是严谨的中医药典籍考证专家，精通《中
   ]
 }`;
 
-const DISCLAIMER_PROMPT = `你是中医内容合规专家，熟悉抖音、小红书、视频号审核规则。
+const DISCLAIMER_PROMPT = `你是中医内容合规专家，熟悉抖音、小红书、视频号的中医内容审核规则。
 
 根据视频文案生成底部辩证免责声明，要求：
-- 体现辨证论治精神，强调个体差异
+- 体现中医辨证论治精神，强调个体差异
 - 须由执业中医师面诊后辨证使用
-- 80-120字，语言自然
-- 不得有保证疗效的表述
+- 80-120字，语言自然不生硬
+- 不得有保证疗效、保证治愈的表述
 
 只输出声明文字本身。`;
 
-async function callGemini(systemPrompt, userContent) {
-  const result = await model.generateContent(
-    `${systemPrompt}\n\n${userContent}`
-  );
-  return result.response.text().trim();
+async function chat(system, user) {
+  const res = await fetch(DEEPSEEK_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "deepseek-chat",
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      temperature: 0.2,
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "DeepSeek API 调用失败");
+  }
+  const data = await res.json();
+  return data.choices[0].message.content.trim();
 }
 
 function parseJSON(raw) {
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}") + 1;
-  return JSON.parse(raw.slice(start, end));
+  const s = raw.indexOf("{");
+  const e = raw.lastIndexOf("}") + 1;
+  return JSON.parse(raw.slice(s, e));
 }
 
 export default async function handler(req, res) {
@@ -74,41 +89,39 @@ export default async function handler(req, res) {
   }
 
   try {
-    // 并行：提取方子 + 生成免责声明
     const [extractRaw, disclaimer] = await Promise.all([
-      callGemini(EXTRACT_PROMPT, content),
-      callGemini(DISCLAIMER_PROMPT, content),
+      chat(EXTRACT_PROMPT, content),
+      chat(DISCLAIMER_PROMPT, content),
     ]);
 
-    const extractJson = parseJSON(extractRaw);
+    const extracted = parseJSON(extractRaw);
 
-    if (!extractJson.remedies || extractJson.remedies.length === 0) {
+    if (!extracted.remedies?.length) {
       return res.status(200).json({ disclaimer, formulas: [] });
     }
 
-    // 逐一核实方子
-    const remedyList = extractJson.remedies
+    const remedyList = extracted.remedies
       .map(
         (r, i) =>
           `${i + 1}. 原文："${r.originalText}"，声称功效：${r.claimedEffect}，类型：${r.type}`
       )
       .join("\n");
 
-    const verifyRaw = await callGemini(
+    const verifyRaw = await chat(
       VERIFY_PROMPT,
       `请对以下方子逐一进行官方文献核实：\n\n${remedyList}`
     );
 
-    const verifyJson = parseJSON(verifyRaw);
+    const verified = parseJSON(verifyRaw);
 
-    const formulas = verifyJson.verified.map((v, i) => ({
-      ...extractJson.remedies[i],
+    const formulas = verified.verified.map((v, i) => ({
+      ...extracted.remedies[i],
       ...v,
     }));
 
     return res.status(200).json({ disclaimer, formulas });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: "生成失败，请稍后重试" });
+    return res.status(500).json({ error: "生成失败：" + err.message });
   }
 }

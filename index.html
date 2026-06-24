@@ -12,84 +12,14 @@
       color: #2c2c2c;
       min-height: 100vh;
     }
-
-    /* 顶栏 */
     header {
       background: #7a1515;
       color: white;
       padding: 16px 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
     }
     header h1 { font-size: 17px; font-weight: 600; }
-    header p { font-size: 12px; opacity: 0.7; margin-top: 2px; }
-    .key-status {
-      font-size: 12px;
-      background: rgba(255,255,255,0.15);
-      padding: 5px 12px;
-      border-radius: 20px;
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .key-status:hover { background: rgba(255,255,255,0.25); }
+    header p { font-size: 12px; opacity: 0.7; margin-top: 3px; }
 
-    /* API Key 设置弹窗 */
-    .modal-bg {
-      display: none;
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.5);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-    }
-    .modal-bg.show { display: flex; }
-    .modal {
-      background: white;
-      border-radius: 14px;
-      padding: 28px;
-      width: 90%;
-      max-width: 480px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-    }
-    .modal h2 { font-size: 17px; color: #7a1515; margin-bottom: 8px; }
-    .modal p { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 16px; }
-    .modal a { color: #7a1515; }
-    .modal input {
-      width: 100%;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      padding: 11px 13px;
-      font-size: 14px;
-      margin-bottom: 12px;
-      font-family: monospace;
-    }
-    .modal input:focus { outline: none; border-color: #7a1515; }
-    .modal-btns { display: flex; gap: 10px; }
-    .btn-primary {
-      flex: 1;
-      padding: 11px;
-      background: #7a1515;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .btn-primary:hover { background: #5e1010; }
-    .btn-secondary {
-      padding: 11px 16px;
-      background: transparent;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      font-size: 14px;
-      cursor: pointer;
-      color: #666;
-    }
-    .btn-secondary:hover { border-color: #999; }
-
-    /* 主体 */
     .container {
       max-width: 860px;
       margin: 24px auto;
@@ -98,7 +28,6 @@
       flex-direction: column;
       gap: 18px;
     }
-
     .card {
       background: white;
       border-radius: 10px;
@@ -111,7 +40,6 @@
       color: #7a1515;
       margin-bottom: 12px;
     }
-
     textarea {
       width: 100%;
       height: 190px;
@@ -156,7 +84,6 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* 进度 */
     .progress { display: none; flex-direction: column; gap: 6px; margin-top: 10px; }
     .step {
       display: flex; align-items: center; gap: 8px;
@@ -170,7 +97,6 @@
     .step.active .dot { background: #7a1515; }
     .step.done .dot { background: #2a7a2a; }
 
-    /* 输出 */
     .output { display: none; flex-direction: column; gap: 18px; }
 
     .disclaimer-box {
@@ -182,7 +108,6 @@
       line-height: 1.8;
       white-space: pre-wrap;
     }
-
     .btn-copy {
       margin-top: 10px;
       padding: 7px 16px;
@@ -196,7 +121,6 @@
     .btn-copy:hover { background: #7a1515; color: white; }
     .btn-copy.copied { background: #2a7a2a; border-color: #2a7a2a; color: white; }
 
-    /* 方子卡片 */
     .formula-card {
       border: 1.5px solid #e8e4e0;
       border-radius: 10px;
@@ -204,7 +128,6 @@
       margin-bottom: 14px;
     }
     .formula-card:last-child { margin-bottom: 0; }
-
     .formula-header {
       padding: 11px 15px;
       display: flex;
@@ -214,73 +137,46 @@
     }
     .formula-header.safe { background: #f0fff0; border-bottom: 1.5px solid #c8e8c8; }
     .formula-header.unsafe { background: #fff5f0; border-bottom: 1.5px solid #f0c8b0; }
-
     .formula-name { font-size: 15px; font-weight: 600; }
     .formula-original { font-size: 12px; color: #888; margin-top: 2px; }
-
     .badge {
       font-size: 11px; padding: 3px 10px;
       border-radius: 20px; font-weight: 600; flex-shrink: 0;
     }
     .badge.safe { background: #2a7a2a; color: white; }
     .badge.unsafe { background: #c04000; color: white; }
-
     .formula-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
     .info-row { display: grid; grid-template-columns: 76px 1fr; gap: 6px; font-size: 13.5px; line-height: 1.6; }
     .info-label { color: #999; font-weight: 500; }
-
     .diff-box {
       background: #fffbf0; border: 1px solid #f0d080;
       border-radius: 6px; padding: 10px 12px;
       font-size: 13px; color: #6a4800; line-height: 1.6;
     }
     .diff-box .label { font-weight: 600; color: #a06000; margin-bottom: 3px; }
-
     .warn-box {
       background: #fff0f0; border: 1px solid #f0b0a0;
       border-radius: 6px; padding: 10px 12px;
       font-size: 13px; color: #7a2a00; line-height: 1.6;
     }
     .warn-box .label { font-weight: 600; color: #c04000; margin-bottom: 3px; }
-
     .source-tag {
       display: inline-block; background: #eef2ff; color: #3a4a8a;
       font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
     }
-
     .error-msg {
       background: #fff0f0; border: 1.5px solid #f0a0a0;
       color: #8b0000; border-radius: 8px;
       padding: 11px 14px; font-size: 13px; display: none; margin-top: 10px;
     }
-
     .no-formula { color: #aaa; font-size: 13px; text-align: center; padding: 16px; }
   </style>
 </head>
 <body>
 
-<!-- API Key 弹窗 -->
-<div class="modal-bg" id="modalBg">
-  <div class="modal">
-    <h2>设置 Gemini API Key</h2>
-    <p>
-      本工具使用 Google Gemini 免费 API，每天可处理100万 token，完全够用。<br><br>
-      获取方式：打开 <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → 点击 <strong>Get API key</strong> → <strong>Create API key</strong> → 复制。
-    </p>
-    <input type="password" id="keyInput" placeholder="粘贴你的 API Key（AIza 开头）" />
-    <div class="modal-btns">
-      <button class="btn-primary" onclick="saveKey()">保存并开始使用</button>
-      <button class="btn-secondary" id="cancelBtn" onclick="closeModal()" style="display:none">取消</button>
-    </div>
-  </div>
-</div>
-
 <header>
-  <div>
-    <h1>中医内容合规助手</h1>
-    <p>对照《中国药典》《中华本草》核实方子，生成平台合规辩证内容</p>
-  </div>
-  <div class="key-status" onclick="openModal()">🔑 更换 API Key</div>
+  <h1>中医内容合规助手</h1>
+  <p>对照《中国药典》《中华本草》核实方子，生成平台合规辩证内容 · Powered by DeepSeek</p>
 </header>
 
 <div class="container">
@@ -301,71 +197,22 @@
   </div>
 
   <div class="output" id="output">
-
     <div class="card">
       <div class="card-title">✅ 视频底部辩证内容</div>
       <div class="disclaimer-box" id="disclaimerOut"></div>
       <button class="btn-copy" onclick="copy('disclaimerOut', this)">复制</button>
     </div>
-
     <div class="card">
       <div class="card-title">📋 方子核实结果</div>
       <div id="formulasOut"></div>
     </div>
-
   </div>
+
 </div>
 
 <script>
-const GEMINI_URL = key =>
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
-
-function getKey() { return localStorage.getItem('gemini_key') || ''; }
-
-function saveKey() {
-  const k = document.getElementById('keyInput').value.trim();
-  if (!k) { alert('请输入 API Key'); return; }
-  localStorage.setItem('gemini_key', k);
-  closeModal();
-}
-
-function openModal() {
-  document.getElementById('keyInput').value = getKey();
-  document.getElementById('cancelBtn').style.display = getKey() ? '' : 'none';
-  document.getElementById('modalBg').classList.add('show');
-}
-
-function closeModal() {
-  document.getElementById('modalBg').classList.remove('show');
-}
-
-// 首次使用弹出设置
-if (!getKey()) openModal();
-
-async function callGemini(prompt) {
-  const key = getKey();
-  const res = await fetch(GEMINI_URL(key), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.2 }
-    })
-  });
-  if (!res.ok) {
-    const err = await res.json();
-    throw new Error(err.error?.message || '调用失败');
-  }
-  const data = await res.json();
-  return data.candidates[0].content.parts[0].text.trim();
-}
-
-function parseJSON(raw) {
-  const s = raw.indexOf('{'), e = raw.lastIndexOf('}') + 1;
-  return JSON.parse(raw.slice(s, e));
-}
-
 let progressTimer = null;
+
 function startProgress() {
   document.getElementById('progress').style.display = 'flex';
   const steps = ['s1','s2','s3'];
@@ -388,7 +235,6 @@ function stopProgress() {
 }
 
 async function generate() {
-  if (!getKey()) { openModal(); return; }
   const text = document.getElementById('inputText').value.trim();
   if (!text) { showError('请先粘贴视频文案'); return; }
 
@@ -397,47 +243,17 @@ async function generate() {
   startProgress();
 
   try {
-    const EXTRACT = `你是中医典籍专家。从以下视频文案中提取所有方剂、中成药、民间偏方、土方子、单味药材特殊用法、食疗方。
-只输出JSON：{"remedies":[{"originalText":"原始描述","name":"名称","claimedEffect":"声称功效","type":"经典方剂/民间偏方/中成药/食疗方/单味药材"}]}
-文案：${text}`;
-
-    const DISCLAIMER = `你是中医内容合规专家，熟悉抖音小红书视频号审核规则。根据以下文案生成底部辩证免责声明，80-120字，体现辨证论治精神，强调须由执业中医师面诊，不得有保证疗效的表述。只输出声明文字。
-文案：${text}`;
-
-    const [extractRaw, disclaimer] = await Promise.all([
-      callGemini(EXTRACT),
-      callGemini(DISCLAIMER)
-    ]);
-
-    const extracted = parseJSON(extractRaw);
-
-    if (!extracted.remedies?.length) {
-      stopProgress();
-      render({ disclaimer, formulas: [] });
-      return;
-    }
-
-    const remedyList = extracted.remedies.map((r, i) =>
-      `${i+1}. 原文："${r.originalText}"，声称功效：${r.claimedEffect}，类型：${r.type}`
-    ).join('\n');
-
-    const VERIFY = `你是严谨的中医药典籍考证专家，精通《中国药典》2020版、《中华本草》、《伤寒论》、《金匮要略》、《本草纲目》、《千金方》。
-对以下方子逐一核实，给出官方文献验证并纠正后的内容。经典方剂对照原典纠正；民间偏方/土方子在《中华本草》中查找，有依据给官方描述，无记载找最接近的官方方剂；夸大功效按官方文献给准确表述。
-只输出JSON：{"verified":[{"originalText":"原始描述","officialName":"官方名称","verifiedEfficacy":"官方功效","verifiedIndications":"适应证型","officialSource":"权威出处（精确到书名卷章）","corrections":"与原文案差异，无差异写与官方记载一致","safetyWarnings":"禁忌和注意事项","isSafe":true}]}
-方子：${remedyList}`;
-
-    const verifyRaw = await callGemini(VERIFY);
-    const verified = parseJSON(verifyRaw);
-
-    const formulas = verified.verified.map((v, i) => ({
-      ...extracted.remedies[i], ...v
-    }));
-
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: text })
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || '生成失败，请重试'); return; }
     stopProgress();
-    render({ disclaimer, formulas });
+    render(data);
   } catch(e) {
-    stopProgress();
-    showError(e.message.includes('API_KEY') ? 'API Key 无效，请点右上角更换' : ('生成失败：' + e.message));
+    showError('网络错误，请重试');
   } finally {
     setLoading(false);
   }
@@ -445,7 +261,6 @@ async function generate() {
 
 function render({ disclaimer, formulas }) {
   document.getElementById('disclaimerOut').textContent = disclaimer;
-
   const c = document.getElementById('formulasOut');
   c.innerHTML = '';
 
@@ -498,7 +313,6 @@ function showError(msg) {
   const e = document.getElementById('errorMsg');
   e.textContent = msg; e.style.display = 'block';
 }
-
 function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
 </script>
 </body>
