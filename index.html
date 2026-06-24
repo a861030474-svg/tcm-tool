@@ -299,8 +299,8 @@ async function generate() {
   }
 }
 
-function render({ disclaimer, formulas }) {
-  document.getElementById('reviewDisclaimerOut').textContent = reviewDisclaimer || disclaimer || '';
+function render({ reviewDisclaimer, bottomWarning, formulas }) {
+  document.getElementById('reviewDisclaimerOut').textContent = reviewDisclaimer || '';
   document.getElementById('bottomWarningOut').textContent = bottomWarning || '';
   const c = document.getElementById('formulasOut');
   c.innerHTML = '';
