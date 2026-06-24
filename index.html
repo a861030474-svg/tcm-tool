@@ -6,7 +6,6 @@
   <title>中医内容合规助手</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
     body {
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
       background: #f5f4f0;
@@ -14,29 +13,98 @@
       min-height: 100vh;
     }
 
+    /* 顶栏 */
     header {
       background: #7a1515;
       color: white;
-      padding: 18px 32px;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
-    header h1 { font-size: 18px; font-weight: 600; }
-    header p { font-size: 12px; opacity: 0.75; margin-top: 3px; }
+    header h1 { font-size: 17px; font-weight: 600; }
+    header p { font-size: 12px; opacity: 0.7; margin-top: 2px; }
+    .key-status {
+      font-size: 12px;
+      background: rgba(255,255,255,0.15);
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .key-status:hover { background: rgba(255,255,255,0.25); }
 
+    /* API Key 设置弹窗 */
+    .modal-bg {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-bg.show { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 14px;
+      padding: 28px;
+      width: 90%;
+      max-width: 480px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .modal h2 { font-size: 17px; color: #7a1515; margin-bottom: 8px; }
+    .modal p { font-size: 13px; color: #666; line-height: 1.6; margin-bottom: 16px; }
+    .modal a { color: #7a1515; }
+    .modal input {
+      width: 100%;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      padding: 11px 13px;
+      font-size: 14px;
+      margin-bottom: 12px;
+      font-family: monospace;
+    }
+    .modal input:focus { outline: none; border-color: #7a1515; }
+    .modal-btns { display: flex; gap: 10px; }
+    .btn-primary {
+      flex: 1;
+      padding: 11px;
+      background: #7a1515;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary:hover { background: #5e1010; }
+    .btn-secondary {
+      padding: 11px 16px;
+      background: transparent;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #666;
+    }
+    .btn-secondary:hover { border-color: #999; }
+
+    /* 主体 */
     .container {
-      max-width: 900px;
-      margin: 28px auto;
-      padding: 0 20px;
-      display: grid;
-      gap: 20px;
+      max-width: 860px;
+      margin: 24px auto;
+      padding: 0 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
     }
 
     .card {
       background: white;
       border-radius: 10px;
-      padding: 22px;
+      padding: 20px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.07);
     }
-
     .card-title {
       font-size: 14px;
       font-weight: 600;
@@ -46,8 +114,8 @@
 
     textarea {
       width: 100%;
-      height: 200px;
-      border: 1.5px solid #ddd;
+      height: 190px;
+      border: 1.5px solid #e0ddd8;
       border-radius: 8px;
       padding: 12px;
       font-size: 14px;
@@ -55,13 +123,12 @@
       resize: vertical;
       font-family: inherit;
       background: #fafaf8;
-      transition: border-color 0.2s;
     }
     textarea:focus { outline: none; border-color: #7a1515; background: white; }
     textarea::placeholder { color: #bbb; }
 
     .btn-generate {
-      margin-top: 14px;
+      margin-top: 12px;
       width: 100%;
       padding: 13px;
       background: #7a1515;
@@ -75,7 +142,6 @@
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: background 0.2s;
     }
     .btn-generate:hover { background: #5e1010; }
     .btn-generate:disabled { background: #ccc; cursor: not-allowed; }
@@ -90,40 +156,23 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* 进度提示 */
-    .progress-steps {
-      display: none;
-      gap: 8px;
-      margin-top: 12px;
-      flex-direction: column;
-    }
+    /* 进度 */
+    .progress { display: none; flex-direction: column; gap: 6px; margin-top: 10px; }
     .step {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      color: #999;
-      padding: 6px 10px;
-      border-radius: 6px;
-      background: #f8f8f8;
+      display: flex; align-items: center; gap: 8px;
+      font-size: 13px; color: #aaa;
+      padding: 6px 10px; border-radius: 6px; background: #f8f8f8;
       transition: all 0.3s;
     }
     .step.active { color: #7a1515; background: #fff5f5; }
     .step.done { color: #2a7a2a; background: #f0fff0; }
-    .step-dot {
-      width: 8px; height: 8px;
-      border-radius: 50%;
-      background: #ddd;
-      flex-shrink: 0;
-      transition: background 0.3s;
-    }
-    .step.active .step-dot { background: #7a1515; }
-    .step.done .step-dot { background: #2a7a2a; }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: #ddd; flex-shrink: 0; }
+    .step.active .dot { background: #7a1515; }
+    .step.done .dot { background: #2a7a2a; }
 
-    /* 输出区 */
-    .output-section { display: none; flex-direction: column; gap: 20px; }
+    /* 输出 */
+    .output { display: none; flex-direction: column; gap: 18px; }
 
-    /* 免责声明块 */
     .disclaimer-box {
       background: #fafaf8;
       border: 1.5px solid #e0ddd8;
@@ -131,7 +180,6 @@
       padding: 14px;
       font-size: 14px;
       line-height: 1.8;
-      color: #333;
       white-space: pre-wrap;
     }
 
@@ -144,165 +192,203 @@
       border-radius: 6px;
       font-size: 12px;
       cursor: pointer;
-      transition: all 0.2s;
     }
     .btn-copy:hover { background: #7a1515; color: white; }
     .btn-copy.copied { background: #2a7a2a; border-color: #2a7a2a; color: white; }
 
-    /* 方子核实卡片 */
+    /* 方子卡片 */
     .formula-card {
+      border: 1.5px solid #e8e4e0;
       border-radius: 10px;
       overflow: hidden;
-      border: 1.5px solid #e8e4e0;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
     .formula-card:last-child { margin-bottom: 0; }
 
     .formula-header {
-      padding: 12px 16px;
+      padding: 11px 15px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      gap: 10px;
     }
     .formula-header.safe { background: #f0fff0; border-bottom: 1.5px solid #c8e8c8; }
     .formula-header.unsafe { background: #fff5f0; border-bottom: 1.5px solid #f0c8b0; }
 
-    .formula-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: #1a1a1a;
-    }
-    .formula-original {
-      font-size: 12px;
-      color: #888;
-      margin-top: 2px;
-    }
+    .formula-name { font-size: 15px; font-weight: 600; }
+    .formula-original { font-size: 12px; color: #888; margin-top: 2px; }
 
-    .safety-badge {
-      flex-shrink: 0;
-      font-size: 12px;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-weight: 600;
+    .badge {
+      font-size: 11px; padding: 3px 10px;
+      border-radius: 20px; font-weight: 600; flex-shrink: 0;
     }
-    .safety-badge.safe { background: #2a7a2a; color: white; }
-    .safety-badge.unsafe { background: #c04000; color: white; }
+    .badge.safe { background: #2a7a2a; color: white; }
+    .badge.unsafe { background: #c04000; color: white; }
 
-    .formula-body {
-      padding: 16px;
-      display: grid;
-      gap: 10px;
-    }
+    .formula-body { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    .info-row { display: grid; grid-template-columns: 76px 1fr; gap: 6px; font-size: 13.5px; line-height: 1.6; }
+    .info-label { color: #999; font-weight: 500; }
 
-    .info-row {
-      display: grid;
-      grid-template-columns: 80px 1fr;
-      gap: 8px;
-      font-size: 13.5px;
-      line-height: 1.6;
+    .diff-box {
+      background: #fffbf0; border: 1px solid #f0d080;
+      border-radius: 6px; padding: 10px 12px;
+      font-size: 13px; color: #6a4800; line-height: 1.6;
     }
-    .info-label { color: #888; font-weight: 500; padding-top: 1px; }
-    .info-value { color: #2c2c2c; }
+    .diff-box .label { font-weight: 600; color: #a06000; margin-bottom: 3px; }
 
-    .correction-box {
-      background: #fffbf0;
-      border: 1px solid #f0d080;
-      border-radius: 6px;
-      padding: 10px 12px;
-      font-size: 13px;
-      color: #6a4800;
-      line-height: 1.6;
+    .warn-box {
+      background: #fff0f0; border: 1px solid #f0b0a0;
+      border-radius: 6px; padding: 10px 12px;
+      font-size: 13px; color: #7a2a00; line-height: 1.6;
     }
-    .correction-box .label { font-weight: 600; color: #a06000; margin-bottom: 3px; }
-
-    .safety-box {
-      background: #fff0f0;
-      border: 1px solid #f0b0a0;
-      border-radius: 6px;
-      padding: 10px 12px;
-      font-size: 13px;
-      color: #7a2a00;
-      line-height: 1.6;
-    }
-    .safety-box .label { font-weight: 600; color: #c04000; margin-bottom: 3px; }
-
-    .error-msg {
-      background: #fff0f0;
-      border: 1.5px solid #f0a0a0;
-      color: #8b0000;
-      border-radius: 8px;
-      padding: 12px;
-      font-size: 13px;
-      display: none;
-      margin-top: 10px;
-    }
-
-    .no-formulas {
-      color: #aaa;
-      font-size: 13px;
-      padding: 16px;
-      text-align: center;
-    }
+    .warn-box .label { font-weight: 600; color: #c04000; margin-bottom: 3px; }
 
     .source-tag {
-      display: inline-block;
-      background: #eef2ff;
-      color: #3a4a8a;
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-weight: 500;
+      display: inline-block; background: #eef2ff; color: #3a4a8a;
+      font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500;
     }
+
+    .error-msg {
+      background: #fff0f0; border: 1.5px solid #f0a0a0;
+      color: #8b0000; border-radius: 8px;
+      padding: 11px 14px; font-size: 13px; display: none; margin-top: 10px;
+    }
+
+    .no-formula { color: #aaa; font-size: 13px; text-align: center; padding: 16px; }
   </style>
 </head>
 <body>
 
+<!-- API Key 弹窗 -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <h2>设置 Gemini API Key</h2>
+    <p>
+      本工具使用 Google Gemini 免费 API，每天可处理100万 token，完全够用。<br><br>
+      获取方式：打开 <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a> → 点击 <strong>Get API key</strong> → <strong>Create API key</strong> → 复制。
+    </p>
+    <input type="password" id="keyInput" placeholder="粘贴你的 API Key（AIza 开头）" />
+    <div class="modal-btns">
+      <button class="btn-primary" onclick="saveKey()">保存并开始使用</button>
+      <button class="btn-secondary" id="cancelBtn" onclick="closeModal()" style="display:none">取消</button>
+    </div>
+  </div>
+</div>
+
 <header>
-  <h1>中医内容合规助手</h1>
-  <p>自动核实方子的官方依据，生成平台合规内容 · 对照《中国药典》《中华本草》等权威文献</p>
+  <div>
+    <h1>中医内容合规助手</h1>
+    <p>对照《中国药典》《中华本草》核实方子，生成平台合规辩证内容</p>
+  </div>
+  <div class="key-status" onclick="openModal()">🔑 更换 API Key</div>
 </header>
 
 <div class="container">
 
   <div class="card">
     <div class="card-title">粘贴视频文案</div>
-    <textarea id="inputText" placeholder="将完整的视频文案粘贴到这里，包括所有对话和说明内容…"></textarea>
+    <textarea id="inputText" placeholder="将完整的视频文案粘贴到这里…"></textarea>
     <button class="btn-generate" id="generateBtn" onclick="generate()">
       <div class="spinner" id="spinner"></div>
       <span id="btnText">一键核实并生成合规内容</span>
     </button>
     <div class="error-msg" id="errorMsg"></div>
-
-    <div class="progress-steps" id="progressSteps">
-      <div class="step" id="step1"><div class="step-dot"></div>正在识别文案中的方子和偏方…</div>
-      <div class="step" id="step2"><div class="step-dot"></div>对照《中国药典》《中华本草》核实…</div>
-      <div class="step" id="step3"><div class="step-dot"></div>生成平台合规的辩证声明…</div>
-      <div class="step" id="step4"><div class="step-dot"></div>整理输出结果…</div>
+    <div class="progress" id="progress">
+      <div class="step" id="s1"><div class="dot"></div>识别文案中的方子和偏方…</div>
+      <div class="step" id="s2"><div class="dot"></div>对照《中国药典》《中华本草》核实…</div>
+      <div class="step" id="s3"><div class="dot"></div>生成平台合规辩证声明…</div>
     </div>
   </div>
 
-  <div class="output-section" id="outputSection">
+  <div class="output" id="output">
 
     <div class="card">
-      <div class="card-title">✅ 视频底部辩证内容 <span style="font-weight:400;color:#aaa;font-size:12px">——复制粘贴到视频底部或置顶评论</span></div>
-      <div class="disclaimer-box" id="disclaimerOutput"></div>
-      <button class="btn-copy" onclick="copyText('disclaimerOutput', this)">复制</button>
+      <div class="card-title">✅ 视频底部辩证内容</div>
+      <div class="disclaimer-box" id="disclaimerOut"></div>
+      <button class="btn-copy" onclick="copy('disclaimerOut', this)">复制</button>
     </div>
 
     <div class="card">
-      <div class="card-title">📋 方子核实结果 <span style="font-weight:400;color:#aaa;font-size:12px">——已对照官方典籍核实并纠正</span></div>
-      <div id="formulasOutput"></div>
+      <div class="card-title">📋 方子核实结果</div>
+      <div id="formulasOut"></div>
     </div>
 
   </div>
-
 </div>
 
 <script>
+const GEMINI_URL = key =>
+  `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`;
+
+function getKey() { return localStorage.getItem('gemini_key') || ''; }
+
+function saveKey() {
+  const k = document.getElementById('keyInput').value.trim();
+  if (!k) { alert('请输入 API Key'); return; }
+  localStorage.setItem('gemini_key', k);
+  closeModal();
+}
+
+function openModal() {
+  document.getElementById('keyInput').value = getKey();
+  document.getElementById('cancelBtn').style.display = getKey() ? '' : 'none';
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function closeModal() {
+  document.getElementById('modalBg').classList.remove('show');
+}
+
+// 首次使用弹出设置
+if (!getKey()) openModal();
+
+async function callGemini(prompt) {
+  const key = getKey();
+  const res = await fetch(GEMINI_URL(key), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.2 }
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || '调用失败');
+  }
+  const data = await res.json();
+  return data.candidates[0].content.parts[0].text.trim();
+}
+
+function parseJSON(raw) {
+  const s = raw.indexOf('{'), e = raw.lastIndexOf('}') + 1;
+  return JSON.parse(raw.slice(s, e));
+}
+
 let progressTimer = null;
+function startProgress() {
+  document.getElementById('progress').style.display = 'flex';
+  const steps = ['s1','s2','s3'];
+  steps.forEach(s => document.getElementById(s).className = 'step');
+  let i = 0;
+  document.getElementById(steps[0]).className = 'step active';
+  progressTimer = setInterval(() => {
+    if (i < steps.length - 1) {
+      document.getElementById(steps[i]).className = 'step done';
+      i++;
+      document.getElementById(steps[i]).className = 'step active';
+    }
+  }, 5000);
+}
+
+function stopProgress() {
+  clearInterval(progressTimer);
+  ['s1','s2','s3'].forEach(s => document.getElementById(s).className = 'step done');
+  setTimeout(() => { document.getElementById('progress').style.display = 'none'; }, 600);
+}
 
 async function generate() {
+  if (!getKey()) { openModal(); return; }
   const text = document.getElementById('inputText').value.trim();
   if (!text) { showError('请先粘贴视频文案'); return; }
 
@@ -311,108 +397,90 @@ async function generate() {
   startProgress();
 
   try {
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: text })
-    });
-    const data = await res.json();
+    const EXTRACT = `你是中医典籍专家。从以下视频文案中提取所有方剂、中成药、民间偏方、土方子、单味药材特殊用法、食疗方。
+只输出JSON：{"remedies":[{"originalText":"原始描述","name":"名称","claimedEffect":"声称功效","type":"经典方剂/民间偏方/中成药/食疗方/单味药材"}]}
+文案：${text}`;
 
-    if (!res.ok) { showError(data.error || '生成失败，请重试'); return; }
+    const DISCLAIMER = `你是中医内容合规专家，熟悉抖音小红书视频号审核规则。根据以下文案生成底部辩证免责声明，80-120字，体现辨证论治精神，强调须由执业中医师面诊，不得有保证疗效的表述。只输出声明文字。
+文案：${text}`;
 
-    finishProgress();
-    renderResult(data);
-  } catch (e) {
-    showError('网络错误，请检查连接后重试');
+    const [extractRaw, disclaimer] = await Promise.all([
+      callGemini(EXTRACT),
+      callGemini(DISCLAIMER)
+    ]);
+
+    const extracted = parseJSON(extractRaw);
+
+    if (!extracted.remedies?.length) {
+      stopProgress();
+      render({ disclaimer, formulas: [] });
+      return;
+    }
+
+    const remedyList = extracted.remedies.map((r, i) =>
+      `${i+1}. 原文："${r.originalText}"，声称功效：${r.claimedEffect}，类型：${r.type}`
+    ).join('\n');
+
+    const VERIFY = `你是严谨的中医药典籍考证专家，精通《中国药典》2020版、《中华本草》、《伤寒论》、《金匮要略》、《本草纲目》、《千金方》。
+对以下方子逐一核实，给出官方文献验证并纠正后的内容。经典方剂对照原典纠正；民间偏方/土方子在《中华本草》中查找，有依据给官方描述，无记载找最接近的官方方剂；夸大功效按官方文献给准确表述。
+只输出JSON：{"verified":[{"originalText":"原始描述","officialName":"官方名称","verifiedEfficacy":"官方功效","verifiedIndications":"适应证型","officialSource":"权威出处（精确到书名卷章）","corrections":"与原文案差异，无差异写与官方记载一致","safetyWarnings":"禁忌和注意事项","isSafe":true}]}
+方子：${remedyList}`;
+
+    const verifyRaw = await callGemini(VERIFY);
+    const verified = parseJSON(verifyRaw);
+
+    const formulas = verified.verified.map((v, i) => ({
+      ...extracted.remedies[i], ...v
+    }));
+
+    stopProgress();
+    render({ disclaimer, formulas });
+  } catch(e) {
+    stopProgress();
+    showError(e.message.includes('API_KEY') ? 'API Key 无效，请点右上角更换' : ('生成失败：' + e.message));
   } finally {
     setLoading(false);
   }
 }
 
-function startProgress() {
-  document.getElementById('progressSteps').style.display = 'flex';
-  const steps = ['step1', 'step2', 'step3', 'step4'];
-  let i = 0;
-  steps.forEach(s => {
-    document.getElementById(s).className = 'step';
-  });
-  document.getElementById(steps[0]).className = 'step active';
+function render({ disclaimer, formulas }) {
+  document.getElementById('disclaimerOut').textContent = disclaimer;
 
-  progressTimer = setInterval(() => {
-    if (i < steps.length - 1) {
-      document.getElementById(steps[i]).className = 'step done';
-      i++;
-      document.getElementById(steps[i]).className = 'step active';
-    }
-  }, 4000);
-}
+  const c = document.getElementById('formulasOut');
+  c.innerHTML = '';
 
-function finishProgress() {
-  clearInterval(progressTimer);
-  ['step1','step2','step3','step4'].forEach(s => {
-    document.getElementById(s).className = 'step done';
-  });
-  setTimeout(() => {
-    document.getElementById('progressSteps').style.display = 'none';
-  }, 800);
-}
-
-function renderResult(data) {
-  document.getElementById('disclaimerOutput').textContent = data.disclaimer;
-
-  const container = document.getElementById('formulasOutput');
-  container.innerHTML = '';
-
-  if (!data.formulas || data.formulas.length === 0) {
-    container.innerHTML = '<div class="no-formulas">未检测到具体方剂或偏方</div>';
+  if (!formulas?.length) {
+    c.innerHTML = '<div class="no-formula">未检测到具体方剂或偏方</div>';
   } else {
-    data.formulas.forEach(f => {
+    formulas.forEach(f => {
       const safe = f.isSafe !== false;
-      const hasCorrection = f.corrections && f.corrections !== '与官方记载一致' && f.corrections.trim() !== '';
-
-      container.innerHTML += `
+      const hasDiff = f.corrections && f.corrections !== '与官方记载一致';
+      c.innerHTML += `
         <div class="formula-card">
-          <div class="formula-header ${safe ? 'safe' : 'unsafe'}">
+          <div class="formula-header ${safe?'safe':'unsafe'}">
             <div>
               <div class="formula-name">${f.officialName || f.name}</div>
               <div class="formula-original">原文：「${f.originalText}」</div>
             </div>
-            <div class="safety-badge ${safe ? 'safe' : 'unsafe'}">${safe ? '✓ 可使用' : '⚠ 需修改'}</div>
+            <div class="badge ${safe?'safe':'unsafe'}">${safe?'✓ 可使用':'⚠ 需修改'}</div>
           </div>
           <div class="formula-body">
-            <div class="info-row">
-              <span class="info-label">官方功效</span>
-              <span class="info-value">${f.verifiedEfficacy}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">适应证型</span>
-              <span class="info-value">${f.verifiedIndications}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">权威出处</span>
-              <span class="info-value"><span class="source-tag">${f.officialSource}</span></span>
-            </div>
-            ${hasCorrection ? `
-            <div class="correction-box">
-              <div class="label">📝 与原文案的差异</div>
-              ${f.corrections}
-            </div>` : ''}
-            ${f.safetyWarnings ? `
-            <div class="safety-box">
-              <div class="label">⚠️ 安全警示</div>
-              ${f.safetyWarnings}
-            </div>` : ''}
+            <div class="info-row"><span class="info-label">官方功效</span><span>${f.verifiedEfficacy||''}</span></div>
+            <div class="info-row"><span class="info-label">适应证型</span><span>${f.verifiedIndications||''}</span></div>
+            <div class="info-row"><span class="info-label">权威出处</span><span><span class="source-tag">${f.officialSource||''}</span></span></div>
+            ${hasDiff?`<div class="diff-box"><div class="label">📝 与原文案差异</div>${f.corrections}</div>`:''}
+            ${f.safetyWarnings?`<div class="warn-box"><div class="label">⚠️ 安全警示</div>${f.safetyWarnings}</div>`:''}
           </div>
         </div>`;
     });
   }
 
-  const sec = document.getElementById('outputSection');
-  sec.style.display = 'flex';
-  sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const out = document.getElementById('output');
+  out.style.display = 'flex';
+  out.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function copyText(id, btn) {
+function copy(id, btn) {
   navigator.clipboard.writeText(document.getElementById(id).textContent).then(() => {
     btn.textContent = '已复制 ✓';
     btn.classList.add('copied');
@@ -423,18 +491,15 @@ function copyText(id, btn) {
 function setLoading(on) {
   document.getElementById('generateBtn').disabled = on;
   document.getElementById('spinner').style.display = on ? 'block' : 'none';
-  document.getElementById('btnText').textContent = on ? '核实中，约需15-30秒…' : '一键核实并生成合规内容';
+  document.getElementById('btnText').textContent = on ? '核实中，约需20-30秒…' : '一键核实并生成合规内容';
 }
 
 function showError(msg) {
-  const el = document.getElementById('errorMsg');
-  el.textContent = msg;
-  el.style.display = 'block';
+  const e = document.getElementById('errorMsg');
+  e.textContent = msg; e.style.display = 'block';
 }
 
-function hideError() {
-  document.getElementById('errorMsg').style.display = 'none';
-}
+function hideError() { document.getElementById('errorMsg').style.display = 'none'; }
 </script>
 </body>
 </html>
